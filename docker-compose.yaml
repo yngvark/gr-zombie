@@ -1,26 +1,23 @@
 version: '3.8'
 
 services:
-  standalone:
-    image: apachepulsar/pulsar-all:2.7.0
+  localstack:
+    container_name: "${LOCALSTACK_DOCKER_NAME-localstack_main}"
+    image: localstack/localstack:0.11.5
+    network_mode: bridge
     ports:
-      - "38080:8080"
-      - "36650:6650"
-    volumes:
-      - pulsardata:/pulsar/data
-      - pulsarconf:/pulsar/conf
-    command: "bin/pulsar standalone"
-
-  dashboard:
-    image: apachepulsar/pulsar-dashboard
-    depends_on:
-      - standalone
-    ports:
-      - "39000:80"
+      - "4566:4566"
+      - "4571:4571"
+      - "${PORT_WEB_UI:-8080}:${PORT_WEB_UI:-8080}"
     environment:
-      - SERVICE_URL=http://standalone:38080
-
-
-volumes:
-  pulsardata:
-  pulsarconf:
+      - SERVICES=${SERVICES- }
+      - DEFAULT_REGION=eu-west-1
+      - DEBUG=1
+      - DATA_DIR=${DATA_DIR- }
+      - PORT_WEB_UI=${PORT_WEB_UI- }
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR- }
+      - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"

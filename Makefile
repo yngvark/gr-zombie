@@ -44,6 +44,7 @@ run: ##-
 	PORT="8080" \
 	ALLOWED_CORS_ORIGINS="http://localhost:3000,http://localhost:3001,http://localhost:30010" \
 	LOG_TYPE="simple" \
+	NETWORK_TYPE="websocket" \
 	go run *.go
 
 run-docker: build-docker ## -
@@ -53,6 +54,8 @@ run-docker: build-docker ## -
 		 -e PORT="8080" \
 		 -e LOG_TYPE="simple" \
 		 -e ALLOWED_CORS_ORIGINS="http://localhost:3001,http://localhost:30010" \
+		 -e LOG_TYPE="simple" \
+		 -e NETWORK_TYPE="websocket" \
 		 -p 8080:8080 \
 		 $(IMAGE)
 

@@ -7,6 +7,7 @@ import (
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/log2"
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pulsar_connector"
+	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/websocket_connector"
 	"go.uber.org/zap"
 	"log"
 	"os"
@@ -61,23 +62,50 @@ func runGameLogic(logger *zap.SugaredLogger, ctx context.Context, cancelFn conte
 	var producer pubsub.Publisher
 	var err error
 
-	producer, err = pulsar_connector.NewPublisher(logger, ctx, cancelFn, "zombie")
+	networkType, networkTypeFound := os.LookupEnv("NETWORK_TYPE")
+
+	if !networkTypeFound || networkType == "pulsar" {
+		logger.Info("Using network type: Pulsar")
+		producer, err = pulsar_connector.NewPublisher(logger, ctx, cancelFn, "zombie")
+	} else if networkType == "websocket" {
+		logger.Info("Using network type: Websocket")
+		producer, err = websocket_connector.NewPublisher(logger, ctx, cancelFn, "zombie")
+	}
+
 	if err != nil {
 		return fmt.Errorf(": %w", err)
 	}
 
-	defer producer.Close()
+	defer func() {
+		err := producer.Close()
+		if err != nil {
+			logger.Error("closing producer: %w", err)
+		}
+	}()
 
 	// Create consumer
 	consumerChan := make(chan string)
 
 	var consumer pubsub.Consumer
-	consumer, err = pulsar_connector.NewConsumer(logger, ctx, "gameinit", consumerChan)
+
+	if !networkTypeFound || networkType == "pulsar" {
+		logger.Info("Using network type: Pulsar")
+		consumer, err = pulsar_connector.NewConsumer(logger, ctx, "gameinit", consumerChan)
+	} else if networkType == "websocket" {
+		logger.Info("Using network type: Websocket")
+		consumer, err = websocket_connector.NewConsumer(logger, ctx, "gameinit", consumerChan)
+	}
+
 	if err != nil {
 		return fmt.Errorf("could not create consumer: %w", err)
 	}
 
-	defer consumer.Close()
+	defer func() {
+		err := consumer.Close()
+		if err != nil {
+			logger.Error("closing producer: %w", err)
+		}
+	}()
 
 	// Create game
 	gameLogic := gamelogicPkg.NewGameLogic(logger, producer, ctx)

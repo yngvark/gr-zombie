@@ -62,8 +62,10 @@ func (m *PulsarPublisher) SendMsg(msg string) error {
 	return nil
 }
 
-func (m *PulsarPublisher) Close() {
+func (m *PulsarPublisher) Close() error {
 	m.log.Info("Closing pulsar publisher")
 	m.producer.Close()
 	m.client.Close()
+
+	return nil
 }

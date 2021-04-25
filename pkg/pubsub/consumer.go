@@ -9,5 +9,5 @@ type Consumer interface {
 	ListenForMessages()
 
 	// Close closes the Consumer.
-	Close()
+	Close() error
 }

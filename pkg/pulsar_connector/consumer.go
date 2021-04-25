@@ -63,9 +63,11 @@ func (c *PulsarConsumer) ListenForMessages() {
 	}
 }
 
-func (c *PulsarConsumer) Close() {
+func (c *PulsarConsumer) Close() error {
 	c.log.Info("Closing pulsar consumer")
 
 	c.consumer.Close()
 	c.client.Close()
+
+	return nil
 }

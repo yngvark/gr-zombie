@@ -5,5 +5,5 @@ type Publisher interface {
 	SendMsg(msg string) error
 
 	// Close closes the publisher
-	Close()
+	Close() error
 }

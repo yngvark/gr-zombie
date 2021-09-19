@@ -6,13 +6,16 @@ ifndef GO
 $(error go is required, please install)
 endif
 
+# Dependencies
 GOPATH			:= $(shell go env GOPATH)
 GOBIN			?= $(GOPATH)/bin
 GOFUMPT			:= $(GOBIN)/gofumpt
 GOLANGCILINT   	:= $(GOBIN)/golangci-lint
 
+# Paths
 PKGS  = $(or $(PKG),$(shell env GO111MODULE=on $(GO) list ./...))
 FILES = $(shell find . -name '.?*' -prune -o -name vendor -prune -o -name '*.go' -print)
+BUILD_DIR     := build
 
 .PHONY: help
 help: ## Print this menu
@@ -40,7 +43,11 @@ lint: golangcilint ## -
 check: fmt lint test
 
 test:
-	go test ./...
+	go test $(PKGS)
+
+build:
+	mkdir -p $(BUILD_DIR)
+	go build -o $(BUILD_DIR)
 
 build-docker: ## -
 	docker build . -t $(IMAGE)

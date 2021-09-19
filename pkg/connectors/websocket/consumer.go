@@ -1,0 +1,69 @@
+package websocket
+
+import (
+	"context"
+	"errors"
+	"net/http"
+
+	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/websocket/httphandler"
+	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
+	"go.uber.org/zap"
+)
+
+type websocketConsumer struct {
+	ctx        context.Context
+	cancelFn   context.CancelFunc
+	logger     *zap.SugaredLogger
+	subscriber chan string
+
+	allowedCorsOrigins map[string]bool
+	httpHandler        *httphandler.Handler
+}
+
+// ListenForMessages starts to receive messages which will be available by reading SubscriberChannel(). It blocks
+// until the websocketConsumer's context is canceled, so you should start it as a goroutine.
+func (c *websocketConsumer) ListenForMessages() error {
+	if c.httpHandler != nil {
+		return errors.New("already listening for messages. Can listen for messages only once")
+	}
+
+	c.httpHandler = httphandler.New(c.cancelFn, c.logger, c.allowedCorsOrigins, c.subscriber)
+	http.Handle("/zombie", c.httpHandler)
+
+	<-c.ctx.Done()
+
+	return nil
+}
+
+// SubscriberChannel returns a channel which can be used for reading incoming messages
+func (c *websocketConsumer) SubscriberChannel() chan string {
+	return c.subscriber
+}
+
+// Close closes the websocketConsumer
+func (c *websocketConsumer) Close() error {
+	c.logger.Info("Closing websocketConsumer")
+
+	if c.httpHandler != nil {
+		return c.httpHandler.Close()
+	}
+
+	return nil
+}
+
+// NewConsumer returns a new consumer for websockets
+func NewConsumer(
+	ctx context.Context,
+	cancelFn context.CancelFunc,
+	logger *zap.SugaredLogger,
+	subscriber chan string,
+	allowedCorsOrigins map[string]bool,
+) pubsub.Consumer {
+	return &websocketConsumer{
+		ctx:                ctx,
+		cancelFn:           cancelFn,
+		logger:             logger,
+		subscriber:         subscriber,
+		allowedCorsOrigins: allowedCorsOrigins,
+	}
+}

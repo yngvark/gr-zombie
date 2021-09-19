@@ -1,5 +1,5 @@
 SHELL         = bash
-IMAGE = ghcr.io/yngvark/zombie-backend
+IMAGE = ghcr.io/yngvark/gr-zombie
 
 GO := $(shell command -v go 2> /dev/null)
 ifndef GO
@@ -19,7 +19,6 @@ PKGS  = $(or $(PKG),$(shell env GO111MODULE=on $(GO) list ./...))
 TESTPKGS = $(shell env GO111MODULE=on $(GO) list -f \
             '{{ if or .TestGoFiles .XTestGoFiles }}{{ .ImportPath }}{{ end }}' \
             $(PKGS))
-
 
 # Directories
 BUILD_DIR     := build
@@ -76,6 +75,8 @@ run-docker: build-docker ## -
 		 $(IMAGE)
 
 push: build-docker ## -
+	@echo Remember to login with docker login ghcr.io. Password is personal access token made in Github.
+	@echo
 	docker push $(IMAGE)
 
 up: ## docker-compose up -d with logs

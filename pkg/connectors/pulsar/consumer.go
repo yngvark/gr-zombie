@@ -16,22 +16,24 @@ type pulsarConsumer struct {
 	ctx        context.Context
 	client     pulsar.Client
 	consumer   pulsar.Consumer
-	subscriber chan<- string
+	subscriber chan string
 }
 
-func (c *pulsarConsumer) SubscriberChannel() <-chan string {
-	panic("implement me")
+func (c *pulsarConsumer) SubscriberChannel() chan string {
+	return c.subscriber
 }
 
 // ListenForMessages reads messages from Pulsar. This function blocks until the context provided on creation is done.
-func (c *pulsarConsumer) ListenForMessages() {
+func (c *pulsarConsumer) ListenForMessages() error {
 	select {
 	case msg := <-c.consumer.Chan():
 		msgString := string(msg.Payload())
 		c.subscriber <- msgString
 	case <-c.ctx.Done():
-		return
+		return nil
 	}
+
+	return nil
 }
 
 func (c *pulsarConsumer) Close() error {
@@ -50,7 +52,7 @@ func NewConsumer(
 	ctx context.Context,
 	logger *zap.SugaredLogger,
 	topic string,
-	subscriber chan<- string,
+	subscriber chan string,
 ) (pubsub.Consumer, error) {
 	// Create client
 	client, err := pulsar.NewClient(pulsar.ClientOptions{

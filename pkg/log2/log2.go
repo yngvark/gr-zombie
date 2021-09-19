@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
+
+	"go.uber.org/zap/zapcore"
 
 	"go.uber.org/zap"
 )
@@ -17,9 +20,13 @@ func New() (*zap.SugaredLogger, error) {
 	}
 
 	if strings.ToLower(logType) == "simple" {
-		l, err := zap.NewDevelopment()
+		config := zap.NewDevelopmentConfig()
+		config.EncoderConfig.EncodeTime = func(time.Time, zapcore.PrimitiveArrayEncoder) {}
+		config.EncoderConfig.EncodeCaller = func(zapcore.EntryCaller, zapcore.PrimitiveArrayEncoder) {}
+
+		l, err := config.Build()
 		if err != nil {
-			return nil, fmt.Errorf("could not get dev logger: %w", err)
+			return nil, fmt.Errorf("creating logger development config: %w", err)
 		}
 
 		return l.Sugar(), nil

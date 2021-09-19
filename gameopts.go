@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+
+	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/websocket/oslookup"
 
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/pulsar"
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/websocket"
@@ -34,7 +37,10 @@ func newGameOpts(ctx context.Context, cancelFn context.CancelFunc, getEnv getEnv
 	subscriberChan := make(chan string)
 
 	if getEnv("GAME_QUEUE_TYPE") == "websocket" {
-		publisher, consumer = pubSubForWebsocket(subscriberChan)
+		publisher, consumer, err = pubSubForWebsocket(ctx, cancelFn, logger, subscriberChan)
+		if err != nil {
+			return nil, fmt.Errorf("creating websocket connectors: %w", err)
+		}
 	} else {
 		publisher, consumer, err = pubSubForPulsar(ctx, cancelFn, logger, subscriberChan)
 		if err != nil {
@@ -50,15 +56,33 @@ func newGameOpts(ctx context.Context, cancelFn context.CancelFunc, getEnv getEnv
 	}, nil
 }
 
-func pubSubForWebsocket(consumerChan <-chan string) (pubsub.Publisher, pubsub.Consumer) {
-	return websocket.NewPublisher(), websocket.NewConsumer(consumerChan)
+const allowedCorsOriginsEnvVarKey = "GAME_ALLOWED_CORS_ORIGINS"
+
+func pubSubForWebsocket(
+	ctx context.Context,
+	cancelFn context.CancelFunc,
+	logger *zap.SugaredLogger,
+	subscriber chan string,
+) (pubsub.Publisher, pubsub.Consumer, error) {
+	corsHelper := oslookup.NewCORSHelper(logger)
+
+	allowedCorsOrigins, err := corsHelper.GetAllowedCorsOrigins(os.LookupEnv, allowedCorsOriginsEnvVarKey)
+	if err != nil {
+		return nil, nil, fmt.Errorf("getting allowed CORS origins: %w", err)
+	}
+
+	corsHelper.PrintAllowedCorsOrigins(allowedCorsOrigins)
+
+	return websocket.NewPublisher(logger),
+		websocket.NewConsumer(ctx, cancelFn, logger, subscriber, allowedCorsOrigins),
+		nil
 }
 
 func pubSubForPulsar(
 	ctx context.Context,
 	cancelFn context.CancelFunc,
 	logger *zap.SugaredLogger,
-	subscriberChan chan<- string,
+	subscriberChan chan string,
 ) (pubsub.Publisher, pubsub.Consumer, error) {
 	// Publisher
 	publisher, err := pulsar.NewPublisher(ctx, cancelFn, logger, "zombie")

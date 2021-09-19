@@ -1,22 +1,21 @@
-package websocket_test
+package oslookup_test
 
-/*
 import (
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/log2"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/websocket/http"
 	"testing"
+
+	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/websocket/oslookup"
+	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/log2"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestOslookup(t *testing.T) {
-
 	t.Run("Should parse cors worigins", func(t *testing.T) {
-		lg, err := log2.New()
+		logger, err := log2.New()
 		assert.Nil(t, err)
 
-		m := http.New(lg)
-		allowed, err := m.GetAllowedCorsOrigins(osLookupEnv, "TEST_ENV")
+		corsHelper := oslookup.NewCORSHelper(logger)
+		allowed, err := corsHelper.GetAllowedCorsOrigins(osLookupEnv, "TEST_ENV")
 		assert.Nil(t, err)
 
 		expected := make(map[string]bool)
@@ -30,4 +29,3 @@ func TestOslookup(t *testing.T) {
 func osLookupEnv(_ string) (string, bool) {
 	return "http://localhost:3000,https://localhost:3001", true
 }
-*/

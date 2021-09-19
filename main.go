@@ -4,16 +4,15 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
-
-	gamelogicPkg "github.com/yngvark/gridwalls3/source/zombie-go/pkg/gamelogic"
 )
 
 func main() {
 	err := run()
 	if err != nil {
-		log.Fatal(fmt.Errorf("could not run game: %w", err))
+		log.Fatal(fmt.Errorf("error running game: %w", err))
 	}
 
 	fmt.Println("Main ended.")
@@ -34,11 +33,34 @@ func run() error {
 	// Listen in the background (i.e. goroutine) if the OS interrupts our program.
 	go cancelProgramIfOsInterrupts(ctx, osInterruptChan, cancelFn)
 
+	// Setup game
 	gameOpts, err := newGameOpts(ctx, cancelFn, os.Getenv)
 	if err != nil {
+		cancelFn()
 		return fmt.Errorf("creating dependencies: %w", err)
 	}
 
+	// Setup HTTP server
+	port, ok := os.LookupEnv("GAME_PORT")
+	if !ok {
+		port = "8080"
+	}
+
+	serverAddr := ":" + port
+	gameOpts.logger.Infof("Running on %s\n", serverAddr)
+
+	go func() {
+		gameOpts.logger.Info("Now attempting to listen on port " + port)
+
+		err = http.ListenAndServe(serverAddr, nil)
+
+		gameOpts.logger.Errorf("HTTP listen and serve: %s", err.Error())
+		cancelFn()
+	}()
+
+	http.HandleFunc("/health", health)
+
+	// Run game
 	return runGameLogic(gameOpts)
 }
 
@@ -52,43 +74,4 @@ func cancelProgramIfOsInterrupts(ctx context.Context, osInterruptChan chan os.Si
 			return
 		}
 	}()
-}
-
-func runGameLogic(o *GameOpts) error {
-	// Create producer
-	defer func() {
-		err := o.publisher.Close()
-		o.logger.Error(err)
-	}()
-
-	// Create consumer
-	defer func() {
-		err := o.consumer.Close()
-		o.logger.Error(err)
-	}()
-
-	// Create game
-	gameLogic := gamelogicPkg.NewGameLogic(o.context, o.logger, o.publisher)
-
-	// Wait until some external orchestrator sends a "start" message
-	go o.consumer.ListenForMessages()
-
-	o.logger.Info("Waiting for start message...")
-
-	select {
-	case msg := <-o.consumer.SubscriberChannel():
-		o.logger.Info("Waiting for start message... Received: %s", msg)
-
-		if msg == "start" {
-			break
-		}
-	case <-o.context.Done():
-		o.logger.Info("Aborted waiting for game to start")
-		return nil
-	}
-
-	o.logger.Info("Running game")
-	gameLogic.Run()
-
-	return nil
 }

@@ -13,8 +13,15 @@ GOFUMPT			:= $(GOBIN)/gofumpt
 GOLANGCILINT   	:= $(GOBIN)/golangci-lint
 
 # Paths
-PKGS  = $(or $(PKG),$(shell env GO111MODULE=on $(GO) list ./...))
 FILES = $(shell find . -name '.?*' -prune -o -name vendor -prune -o -name '*.go' -print)
+
+PKGS  = $(or $(PKG),$(shell env GO111MODULE=on $(GO) list ./...))
+TESTPKGS = $(shell env GO111MODULE=on $(GO) list -f \
+            '{{ if or .TestGoFiles .XTestGoFiles }}{{ .ImportPath }}{{ end }}' \
+            $(PKGS))
+
+
+# Directories
 BUILD_DIR     := build
 
 .PHONY: help
@@ -43,7 +50,7 @@ lint: golangcilint ## -
 check: fmt lint test
 
 test:
-	go test $(PKGS)
+	go test $(TESTPKGS)
 
 build:
 	mkdir -p $(BUILD_DIR)
@@ -81,3 +88,38 @@ down: ## docker-compose down
 
 ws-edit: ## - Edit websocket config
 	docker run -it -v zombie-go_pulsarconf:/pconf yngvark/linuxtools vim /pconf/websocket.conf
+
+# Coverage
+GOCOVMERGE      := $(GOBIN)/gocovmerge
+GOCOVXML        := $(GOBIN)/gocov-xml
+GOCOV           := $(GOBIN)/gocov
+
+COVERAGE_MODE    = atomic
+COVERAGE_PROFILE = $(COVERAGE_DIR)/profile.out
+COVERAGE_XML     = $(COVERAGE_DIR)/coverage.xml
+COVERAGE_HTML    = $(COVERAGE_DIR)/index.html
+
+$(GOCOVMERGE):
+	$(GO) install github.com/wadey/gocovmerge@latest
+
+$(GOCOVXML):
+	$(GO) install github.com/AlekSi/gocov-xml@latest
+
+$(GOCOV):
+	$(GO) install github.com/axw/gocov/gocov@v1.0.0
+
+test-coverage-tools: | $(GOCOVMERGE) $(GOCOV) $(GOCOVXML)
+test-coverage: COVERAGE_DIR := $(BUILD_DIR)/test/coverage.$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+test-coverage: fmt lint test-coverage-tools
+	@mkdir -p $(COVERAGE_DIR)/coverage
+	@for pkg in $(TESTPKGS); do \
+        go test \
+            -coverpkg=$$(go list -f '{{ join .Deps "\n" }}' $$pkg | \
+                    grep '^$(MODULE)/' | \
+                    tr '\n' ',')$$pkg \
+            -covermode=$(COVERAGE_MODE) \
+            -coverprofile="$(COVERAGE_DIR)/coverage/`echo $$pkg | tr "/" "-"`.cover" $$pkg ;\
+     done
+	@$(GOCOVMERGE) $(COVERAGE_DIR)/coverage/*.cover > $(COVERAGE_PROFILE)
+	@$(GO) tool cover -html=$(COVERAGE_PROFILE) -o $(COVERAGE_HTML)
+	@$(GOCOV) convert $(COVERAGE_PROFILE) | $(GOCOVXML) > $(COVERAGE_XML)

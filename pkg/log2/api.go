@@ -1,3 +1,4 @@
+// Package log2 knows how to log
 package log2
 
 import (
@@ -8,6 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// New returns a new zap.SugaredLogger
 func New() (*zap.SugaredLogger, error) {
 	logType, ok := os.LookupEnv("LOG_TYPE")
 	if !ok {

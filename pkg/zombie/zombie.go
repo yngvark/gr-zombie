@@ -1,3 +1,4 @@
+// Package zombie knows how to manage zombies
 package zombie
 
 import (
@@ -7,24 +8,16 @@ import (
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/worldmap"
 )
 
+// Zombie is a horrible monster
 type Zombie struct {
-	Id       string
+	ID       string
 	X        int
 	Y        int
 	WorldMap *worldmap.WorldMap
 	Rand     *rand.Rand
 }
 
-func NewZombie(id string, x int, y int, worldMap *worldmap.WorldMap, rnd *rand.Rand) *Zombie {
-	return &Zombie{
-		Id:       id,
-		X:        x,
-		Y:        y,
-		WorldMap: worldMap,
-		Rand:     rnd,
-	}
-}
-
+// Move moves the Zombie
 func (z *Zombie) Move() (*Zombie, *Move, error) {
 	newX, err := z.getNewCoordPart(z.X, worldmap.Axis.X)
 	if err != nil {
@@ -36,8 +29,8 @@ func (z *Zombie) Move() (*Zombie, *Move, error) {
 		return nil, nil, fmt.Errorf("could not get new x coordinate: %w", err)
 	}
 
-	newZ := NewZombie(z.Id, newX, newY, z.WorldMap, z.Rand)
-	move := NewZombieMove(z.Id, newX, newY)
+	newZ := NewZombie(z.ID, newX, newY, z.WorldMap, z.Rand)
+	move := NewZombieMove(z.ID, newX, newY)
 
 	return newZ, move, nil
 }
@@ -56,4 +49,15 @@ func (z *Zombie) getNewCoordPart(currentValue int, axisType worldmap.AxisType) (
 	}
 
 	return currentValue, nil
+}
+
+// NewZombie returns a new Zombie
+func NewZombie(id string, x int, y int, worldMap *worldmap.WorldMap, rnd *rand.Rand) *Zombie {
+	return &Zombie{
+		ID:       id,
+		X:        x,
+		Y:        y,
+		WorldMap: worldMap,
+		Rand:     rnd,
+	}
 }

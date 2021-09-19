@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type PulsarConsumer struct {
+type pulsarConsumer struct {
 	log        *zap.SugaredLogger
 	ctx        context.Context
 	client     pulsar.Client
@@ -19,12 +19,12 @@ type PulsarConsumer struct {
 	subscriber chan<- string
 }
 
-func (c *PulsarConsumer) SubscriberChannel() <-chan string {
+func (c *pulsarConsumer) SubscriberChannel() <-chan string {
 	panic("implement me")
 }
 
 // ListenForMessages reads messages from Pulsar. This function blocks until the context provided on creation is done.
-func (c *PulsarConsumer) ListenForMessages() {
+func (c *pulsarConsumer) ListenForMessages() {
 	select {
 	case msg := <-c.consumer.Chan():
 		msgString := string(msg.Payload())
@@ -34,7 +34,7 @@ func (c *PulsarConsumer) ListenForMessages() {
 	}
 }
 
-func (c *PulsarConsumer) Close() error {
+func (c *pulsarConsumer) Close() error {
 	c.log.Info("Closing pulsar consumer")
 
 	c.consumer.Close()
@@ -45,6 +45,7 @@ func (c *PulsarConsumer) Close() error {
 
 const timeoutsDefault = 30 * time.Second
 
+// NewConsumer returns a pulsar consumer
 func NewConsumer(
 	ctx context.Context,
 	logger *zap.SugaredLogger,
@@ -71,7 +72,7 @@ func NewConsumer(
 		return nil, fmt.Errorf("subscribing to client: %w", err)
 	}
 
-	c := &PulsarConsumer{
+	c := &pulsarConsumer{
 		log:        logger,
 		ctx:        ctx,
 		client:     client,

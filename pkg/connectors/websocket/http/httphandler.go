@@ -1,7 +1,7 @@
+// Package http knows how to handle HTTP websocket connections
 package http
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -11,7 +11,8 @@ import (
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
 )
 
-type HTTPHandler struct {
+// Handler knows how to handle HTTP websocket connections
+type Handler struct {
 	upgrader             *websocket.Upgrader
 	connection           *websocket.Conn
 	publisher            pubsub.Publisher
@@ -19,8 +20,9 @@ type HTTPHandler struct {
 	log                  *zap.SugaredLogger
 }
 
-func NewHTTPHandler(logger *zap.SugaredLogger, allowedOrigins map[string]bool, publisher pubsub.Publisher, stopGamelogicChannel chan bool) *HTTPHandler {
-	h := &HTTPHandler{
+// NewHTTPHandler returns a new Handler
+func NewHTTPHandler(logger *zap.SugaredLogger, allowedOrigins map[string]bool, publisher pubsub.Publisher, stopGamelogicChannel chan bool) *Handler {
+	h := &Handler{
 		log:                  logger,
 		publisher:            publisher,
 		stopGamelogicChannel: stopGamelogicChannel,
@@ -48,7 +50,7 @@ func NewHTTPHandler(logger *zap.SugaredLogger, allowedOrigins map[string]bool, p
 	return h
 }
 
-func (h *HTTPHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	connection, err := h.upgrader.Upgrade(writer, request, nil)
 	if err != nil {
 		h.log.Error("could not upgrade:", err)
@@ -63,12 +65,12 @@ func (h *HTTPHandler) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 	// Handle disconnection
 	activelyCloseConnectionChannel := make(chan bool)
 
-	defer h.CloseConnectionWhenDone(activelyCloseConnectionChannel)
+	defer h.closeConnectionWhenDone(activelyCloseConnectionChannel)
 
-	go h.ReadIncomingMessages(activelyCloseConnectionChannel)
+	go h.readIncomingMessages(activelyCloseConnectionChannel)
 }
 
-func (h *HTTPHandler) CloseConnectionWhenDone(closeConnectionChannel chan bool) {
+func (h *Handler) closeConnectionWhenDone(closeConnectionChannel chan bool) {
 	select {
 	case <-h.stopGamelogicChannel:
 	case <-closeConnectionChannel:
@@ -85,7 +87,7 @@ func (h *HTTPHandler) CloseConnectionWhenDone(closeConnectionChannel chan bool) 
 	}
 }
 
-func (h *HTTPHandler) ReadIncomingMessages(closeConnectionChannel chan bool) {
+func (h *Handler) readIncomingMessages(closeConnectionChannel chan bool) {
 	for {
 		h.log.Info("Reading next message...")
 
@@ -103,7 +105,7 @@ func (h *HTTPHandler) ReadIncomingMessages(closeConnectionChannel chan bool) {
 			return
 		}
 
-		err = h.HandleIncomingMsg(message)
+		err = h.handleIncomingMsg(message)
 		if err != nil {
 			h.log.Errorf("Error handling incoming message. Aborting. Error: %s", err.Error())
 			return
@@ -111,7 +113,7 @@ func (h *HTTPHandler) ReadIncomingMessages(closeConnectionChannel chan bool) {
 	}
 }
 
-func (h *HTTPHandler) HandleIncomingMsg(message []byte) error {
+func (h *Handler) handleIncomingMsg(message []byte) error {
 	h.log.Infof("Received: %s", message)
 	msgString := string(message)
 
@@ -123,7 +125,8 @@ func (h *HTTPHandler) HandleIncomingMsg(message []byte) error {
 	return nil
 }
 
-func (h *HTTPHandler) SendMsg(msg string) error {
+/*
+func (h *Handler) sendMsg(msg string) error {
 	if h.connection == nil {
 		return errors.New("could not send message, not connected")
 	}
@@ -137,3 +140,4 @@ func (h *HTTPHandler) SendMsg(msg string) error {
 
 	return nil
 }
+*/

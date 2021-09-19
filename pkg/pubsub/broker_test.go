@@ -16,7 +16,7 @@ func TestPubSub(t *testing.T) {
 		b := net.NewBroker()
 		testReceiver := &testReceiver{}
 
-		b.Subscribe(testReceiver)
+		b.AddSubscriber(testReceiver)
 
 		// When
 		err := b.SendMsg("YO")

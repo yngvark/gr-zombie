@@ -11,4 +11,5 @@ require (
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 	golang.org/x/mod v0.5.0 // indirect
 	golang.org/x/tools v0.1.6 // indirect
+	mvdan.cc/gofumpt v0.1.1 // indirect
 )

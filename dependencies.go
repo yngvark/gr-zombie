@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// GameOpts contains various dependencies
 type GameOpts struct {
 	context   context.Context
 	logger    *zap.SugaredLogger
@@ -27,9 +28,10 @@ func newGameOpts(ctx context.Context, cancelFn context.CancelFunc, getEnv getEnv
 	}
 
 	var publisher pubsub.Publisher
+
 	var consumer pubsub.Consumer
 
-	subscriberChan := make(chan<- string)
+	subscriberChan := make(chan string)
 
 	if getEnv("GAME_QUEUE_TYPE") == "websocket" {
 		publisher, consumer = pubSubForWebsocket(subscriberChan)
@@ -48,7 +50,7 @@ func newGameOpts(ctx context.Context, cancelFn context.CancelFunc, getEnv getEnv
 	}, nil
 }
 
-func pubSubForWebsocket(consumerChan chan<- string) (pubsub.Publisher, pubsub.Consumer) {
+func pubSubForWebsocket(consumerChan <-chan string) (pubsub.Publisher, pubsub.Consumer) {
 	return websocket.NewPublisher(), websocket.NewConsumer(consumerChan)
 }
 

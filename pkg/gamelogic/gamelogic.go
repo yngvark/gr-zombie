@@ -13,6 +13,7 @@ import (
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/worldmap"
 )
 
+// GameLogic knows how to run the game
 type GameLogic struct {
 	log       *zap.SugaredLogger
 	publisher pubsub.Publisher
@@ -20,7 +21,8 @@ type GameLogic struct {
 	generator *Generator
 }
 
-func NewGameLogic(logger *zap.SugaredLogger, publisher pubsub.Publisher, ctx context.Context) *GameLogic {
+// NewGameLogic returns a new GameLogic
+func NewGameLogic(ctx context.Context, logger *zap.SugaredLogger, publisher pubsub.Publisher) *GameLogic {
 	m := worldmap.New(20, 10)                                                //nolint:gomnd
 	zombie := zombie2.NewZombie("1", 10, 5, m, rand.New(rand.NewSource(45))) //nolint:gosec,gomnd
 
@@ -32,7 +34,7 @@ func NewGameLogic(logger *zap.SugaredLogger, publisher pubsub.Publisher, ctx con
 	}
 }
 
-// Run continously publishes messages with game logic events. It blocks until signalled to stop.
+// Run continuously publishes messages with game logic events. It blocks until signalled to stop.
 func (l *GameLogic) Run() {
 	l.log.Info("Starting to generate...")
 

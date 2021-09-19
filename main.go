@@ -49,6 +49,7 @@ func cancelProgramIfOsInterrupts(ctx context.Context, osInterruptChan chan os.Si
 			cancelFn()
 		case <-ctx.Done():
 			// Stop listening
+			return
 		}
 	}()
 }
@@ -67,7 +68,7 @@ func runGameLogic(o *GameOpts) error {
 	}()
 
 	// Create game
-	gameLogic := gamelogicPkg.NewGameLogic(o.logger, o.publisher, o.context)
+	gameLogic := gamelogicPkg.NewGameLogic(o.context, o.logger, o.publisher)
 
 	// Wait until some external orchestrator sends a "start" message
 	go o.consumer.ListenForMessages()
@@ -77,6 +78,7 @@ func runGameLogic(o *GameOpts) error {
 	select {
 	case msg := <-o.consumer.SubscriberChannel():
 		o.logger.Info("Waiting for start message... Received: %s", msg)
+
 		if msg == "start" {
 			break
 		}

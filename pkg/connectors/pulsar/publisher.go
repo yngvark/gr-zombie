@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type PulsarPublisher struct {
+type pulsarPublisher struct {
 	log      *zap.SugaredLogger
 	ctx      context.Context
 	cancelFn context.CancelFunc
@@ -17,6 +17,27 @@ type PulsarPublisher struct {
 	producer pulsar.Producer
 }
 
+func (m *pulsarPublisher) SendMsg(msg string) error {
+	_, err := m.producer.Send(m.ctx, &pulsar.ProducerMessage{
+		Payload: []byte(msg),
+	})
+	if err != nil {
+		m.cancelFn()
+		return fmt.Errorf("failed to send message: %w", err)
+	}
+
+	return nil
+}
+
+func (m *pulsarPublisher) Close() error {
+	m.log.Info("Closing pulsar publisher")
+	m.producer.Close()
+	m.client.Close()
+
+	return nil
+}
+
+// NewPublisher returns a pulsar publisher
 func NewPublisher(
 	ctx context.Context,
 	cancelFn context.CancelFunc,
@@ -41,7 +62,7 @@ func NewPublisher(
 		return nil, fmt.Errorf("could not create producer: %w", err)
 	}
 
-	p := &PulsarPublisher{
+	p := &pulsarPublisher{
 		log:      logger,
 		ctx:      ctx,
 		cancelFn: cancelFn,
@@ -50,24 +71,4 @@ func NewPublisher(
 	}
 
 	return p, nil
-}
-
-func (m *PulsarPublisher) SendMsg(msg string) error {
-	_, err := m.producer.Send(m.ctx, &pulsar.ProducerMessage{
-		Payload: []byte(msg),
-	})
-	if err != nil {
-		m.cancelFn()
-		return fmt.Errorf("failed to send message: %w", err)
-	}
-
-	return nil
-}
-
-func (m *PulsarPublisher) Close() error {
-	m.log.Info("Closing pulsar publisher")
-	m.producer.Close()
-	m.client.Close()
-
-	return nil
 }

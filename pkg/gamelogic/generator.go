@@ -7,16 +7,12 @@ import (
 	zombiePkg "github.com/yngvark/gridwalls3/source/zombie-go/pkg/zombie"
 )
 
+// Generator knows how to generate zombie actions
 type Generator struct {
 	zombie *zombiePkg.Zombie
 }
 
-func NewGenerator(initialZombie *zombiePkg.Zombie) *Generator {
-	return &Generator{
-		zombie: initialZombie,
-	}
-}
-
+// Next returns the next zombie action
 func (g *Generator) Next() (*zombiePkg.Move, error) {
 	z, move, err := g.zombie.Move()
 	if err != nil {
@@ -26,4 +22,11 @@ func (g *Generator) Next() (*zombiePkg.Move, error) {
 	g.zombie = z
 
 	return move, nil
+}
+
+// NewGenerator returns a new Generator
+func NewGenerator(initialZombie *zombiePkg.Zombie) *Generator {
+	return &Generator{
+		zombie: initialZombie,
+	}
 }

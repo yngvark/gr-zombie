@@ -3,8 +3,9 @@ package http
 import (
 	"errors"
 	"fmt"
-	"go.uber.org/zap"
 	"net/http"
+
+	"go.uber.org/zap"
 
 	"github.com/gorilla/websocket"
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
@@ -97,19 +98,29 @@ func (h *HTTPHandler) ReadIncomingMessages(closeConnectionChannel chan bool) {
 			h.stopGamelogicChannel <- true
 			closeConnectionChannel <- true
 
-			h.log.Errorf("Read error: %w")
+			h.log.Errorf("Read error: %s", err.Error())
 
-			break
+			return
 		}
 
-		h.HandleIncomingMsg(message)
+		err = h.HandleIncomingMsg(message)
+		if err != nil {
+			h.log.Errorf("Error handling incoming message. Aborting. Error: %s", err.Error())
+			return
+		}
 	}
 }
 
-func (h *HTTPHandler) HandleIncomingMsg(message []byte) {
+func (h *HTTPHandler) HandleIncomingMsg(message []byte) error {
 	h.log.Infof("Received: %s", message)
 	msgString := string(message)
-	h.publisher.SendMsg(msgString)
+
+	err := h.publisher.SendMsg(msgString)
+	if err != nil {
+		return fmt.Errorf("sending message with publisher: %w", err)
+	}
+
+	return nil
 }
 
 func (h *HTTPHandler) SendMsg(msg string) error {

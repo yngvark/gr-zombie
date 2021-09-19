@@ -3,31 +3,23 @@ package main
 import (
 	"context"
 	"fmt"
-	gamelogicPkg "github.com/yngvark/gridwalls3/source/zombie-go/pkg/gamelogic"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/log2"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pulsar_connector"
-	"go.uber.org/zap"
 	"log"
 	"os"
 	"os/signal"
+
+	gamelogicPkg "github.com/yngvark/gridwalls3/source/zombie-go/pkg/gamelogic"
 )
 
 func main() {
 	err := run()
 	if err != nil {
-		log.Fatal(fmt.Errorf("could not run game: %w\n", err))
+		log.Fatal(fmt.Errorf("could not run game: %w", err))
 	}
 
 	fmt.Println("Main ended.")
 }
 
 func run() error {
-	logger, err := log2.New()
-	if err != nil {
-		return fmt.Errorf("could not create logger: %w", err)
-	}
-
 	ctx, cancelFn := context.WithCancel(context.Background())
 	osInterruptChan := make(chan os.Signal, 1)
 
@@ -40,12 +32,17 @@ func run() error {
 	}()
 
 	// Listen in the background (i.e. goroutine) if the OS interrupts our program.
-	go cancelProgramIfOsInterrupts(osInterruptChan, cancelFn, ctx)
+	go cancelProgramIfOsInterrupts(ctx, osInterruptChan, cancelFn)
 
-	return runGameLogic(logger, ctx, cancelFn)
+	gameOpts, err := newGameOpts(ctx, cancelFn, os.Getenv)
+	if err != nil {
+		return fmt.Errorf("creating dependencies: %w", err)
+	}
+
+	return runGameLogic(gameOpts)
 }
 
-func cancelProgramIfOsInterrupts(osInterruptChan chan os.Signal, cancelFn context.CancelFunc, ctx context.Context) {
+func cancelProgramIfOsInterrupts(ctx context.Context, osInterruptChan chan os.Signal, cancelFn context.CancelFunc) {
 	func() {
 		select {
 		case <-osInterruptChan:
@@ -56,48 +53,39 @@ func cancelProgramIfOsInterrupts(osInterruptChan chan os.Signal, cancelFn contex
 	}()
 }
 
-func runGameLogic(logger *zap.SugaredLogger, ctx context.Context, cancelFn context.CancelFunc) error {
+func runGameLogic(o *GameOpts) error {
 	// Create producer
-	var producer pubsub.Publisher
-	var err error
-
-	producer, err = pulsar_connector.NewPublisher(logger, ctx, cancelFn, "zombie")
-	if err != nil {
-		return fmt.Errorf(": %w", err)
-	}
-
-	defer producer.Close()
+	defer func() {
+		err := o.publisher.Close()
+		o.logger.Error(err)
+	}()
 
 	// Create consumer
-	consumerChan := make(chan string)
-
-	var consumer pubsub.Consumer
-	consumer, err = pulsar_connector.NewConsumer(logger, ctx, "gameinit", consumerChan)
-	if err != nil {
-		return fmt.Errorf("could not create consumer: %w", err)
-	}
-
-	defer consumer.Close()
+	defer func() {
+		err := o.consumer.Close()
+		o.logger.Error(err)
+	}()
 
 	// Create game
-	gameLogic := gamelogicPkg.NewGameLogic(logger, producer, ctx)
+	gameLogic := gamelogicPkg.NewGameLogic(o.logger, o.publisher, o.context)
 
 	// Wait until some external orchestrator sends a "start" message
-	go consumer.ListenForMessages()
+	go o.consumer.ListenForMessages()
 
-	logger.Info("Waiting for start message...")
+	o.logger.Info("Waiting for start message...")
+
 	select {
-	case msg := <-consumerChan:
-		logger.Info("Waiting for start message... Received: %s", msg)
+	case msg := <-o.consumer.SubscriberChannel():
+		o.logger.Info("Waiting for start message... Received: %s", msg)
 		if msg == "start" {
 			break
 		}
-	case <-ctx.Done():
-		logger.Info("Aborted waiting for game to start")
+	case <-o.context.Done():
+		o.logger.Info("Aborted waiting for game to start")
 		return nil
 	}
 
-	logger.Info("Running game")
+	o.logger.Info("Running game")
 	gameLogic.Run()
 
 	return nil

@@ -1,12 +1,12 @@
-package pulsar_connector
+package pulsar
 
 import (
 	"context"
 	"fmt"
+
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
 	"go.uber.org/zap"
-	"time"
 )
 
 type PulsarPublisher struct {
@@ -17,14 +17,18 @@ type PulsarPublisher struct {
 	producer pulsar.Producer
 }
 
-func NewPublisher(logger *zap.SugaredLogger, ctx context.Context, cancelFn context.CancelFunc, topic string) (pubsub.Publisher, error) {
+func NewPublisher(
+	ctx context.Context,
+	cancelFn context.CancelFunc,
+	logger *zap.SugaredLogger,
+	topic string,
+) (pubsub.Publisher, error) {
 	// Create client
 	client, err := pulsar.NewClient(pulsar.ClientOptions{
 		URL:               "pulsar://localhost:36650",
-		OperationTimeout:  30 * time.Second,
-		ConnectionTimeout: 30 * time.Second,
+		OperationTimeout:  timeoutsDefault,
+		ConnectionTimeout: timeoutsDefault,
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("could not instantiate Pulsar client: %w", err)
 	}
@@ -33,7 +37,6 @@ func NewPublisher(logger *zap.SugaredLogger, ctx context.Context, cancelFn conte
 	producer, err := client.CreateProducer(pulsar.ProducerOptions{
 		Topic: topic,
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("could not create producer: %w", err)
 	}
@@ -53,7 +56,6 @@ func (m *PulsarPublisher) SendMsg(msg string) error {
 	_, err := m.producer.Send(m.ctx, &pulsar.ProducerMessage{
 		Payload: []byte(msg),
 	})
-
 	if err != nil {
 		m.cancelFn()
 		return fmt.Errorf("failed to send message: %w", err)

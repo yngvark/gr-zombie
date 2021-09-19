@@ -1,7 +1,9 @@
+// Package gamelogic contains the core game logic
 package gamelogic
 
 import (
 	"fmt"
+
 	zombiePkg "github.com/yngvark/gridwalls3/source/zombie-go/pkg/zombie"
 )
 

@@ -1,5 +1,6 @@
 package websocket_test
 
+/*
 import (
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/log2"
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/websocket/http"
@@ -29,3 +30,4 @@ func TestOslookup(t *testing.T) {
 func osLookupEnv(_ string) (string, bool) {
 	return "http://localhost:3000,https://localhost:3001", true
 }
+*/

@@ -3,10 +3,11 @@ package gamelogic
 import (
 	"context"
 	"encoding/json"
-	zombie2 "github.com/yngvark/gridwalls3/source/zombie-go/pkg/zombie"
-	"go.uber.org/zap"
 	"math/rand"
 	"time"
+
+	zombie2 "github.com/yngvark/gridwalls3/source/zombie-go/pkg/zombie"
+	"go.uber.org/zap"
 
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/worldmap"

@@ -3,6 +3,8 @@ package pubsub_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	net "github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
 
 	"github.com/stretchr/testify/assert"
@@ -17,7 +19,8 @@ func TestPubSub(t *testing.T) {
 		b.Subscribe(testReceiver)
 
 		// When
-		b.SendMsg("YO")
+		err := b.SendMsg("YO")
+		require.NoError(t, err)
 
 		// Then
 		assert.Equal(t, "YO", testReceiver.lastMsgReceived)

@@ -32,10 +32,15 @@ fmt: gofumpt  ## -
 golangcilint:
 	# To bump, simply change the version at the end to the desired version. The git sha here points to the newest commit
 	# of the install script verified by our team located here: https://github.com/golangci/golangci-lint/blob/master/install.sh
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/b90551cdf9c6214075f2a40d1b5595c6b41ffff0/install.sh | sh -s -- -b ${GOBIN} v1.32.2
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/17d24ebd671875cdf52804e1ca72ca8f0718a844/install.sh | sh -s -- -b ${GOBIN} v1.42.1
 
 lint: golangcilint ## -
 	$(GOLANGCILINT) run
+
+check: fmt lint test
+
+test:
+	go test ./...
 
 build-docker: ## -
 	docker build . -t $(IMAGE)

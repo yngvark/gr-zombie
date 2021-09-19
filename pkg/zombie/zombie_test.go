@@ -1,9 +1,10 @@
 package zombie_test
 
 import (
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/gamelogic"
 	"math/rand"
 	"testing"
+
+	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/gamelogic"
 
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/worldmap"
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/zombie"

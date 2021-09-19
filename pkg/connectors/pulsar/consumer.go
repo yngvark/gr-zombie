@@ -1,12 +1,14 @@
-package pulsar_connector
+// Package pulsar handles publishing and subscribing with Apache Pulsar
+package pulsar
 
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
 	"go.uber.org/zap"
-	"time"
 )
 
 type PulsarConsumer struct {
@@ -17,39 +19,8 @@ type PulsarConsumer struct {
 	subscriber chan<- string
 }
 
-func NewConsumer(
-	logger *zap.SugaredLogger,
-	ctx context.Context,
-	topic string,
-	subscriber chan<- string,
-) (pubsub.Consumer, error) {
-	// Create client
-	client, err := pulsar.NewClient(pulsar.ClientOptions{
-		URL:               "pulsar://localhost:36650",
-		OperationTimeout:  30 * time.Second,
-		ConnectionTimeout: 30 * time.Second,
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("could not instantiate Pulsar client: %w", err)
-	}
-
-	// Create consumer
-	consumer, err := client.Subscribe(pulsar.ConsumerOptions{
-		Topic:            topic,
-		SubscriptionName: "mysub2",
-		Type:             pulsar.Exclusive,
-	})
-
-	c := &PulsarConsumer{
-		log:        logger,
-		ctx:        ctx,
-		client:     client,
-		consumer:   consumer,
-		subscriber: subscriber,
-	}
-
-	return c, nil
+func (c *PulsarConsumer) SubscriberChannel() <-chan string {
+	panic("implement me")
 }
 
 // ListenForMessages reads messages from Pulsar. This function blocks until the context provided on creation is done.
@@ -70,4 +41,43 @@ func (c *PulsarConsumer) Close() error {
 	c.client.Close()
 
 	return nil
+}
+
+const timeoutsDefault = 30 * time.Second
+
+func NewConsumer(
+	ctx context.Context,
+	logger *zap.SugaredLogger,
+	topic string,
+	subscriber chan<- string,
+) (pubsub.Consumer, error) {
+	// Create client
+	client, err := pulsar.NewClient(pulsar.ClientOptions{
+		URL:               "pulsar://localhost:36650",
+		OperationTimeout:  timeoutsDefault,
+		ConnectionTimeout: timeoutsDefault,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("could not instantiate Pulsar client: %w", err)
+	}
+
+	// Create consumer
+	consumer, err := client.Subscribe(pulsar.ConsumerOptions{
+		Topic:            topic,
+		SubscriptionName: "mysub2",
+		Type:             pulsar.Exclusive,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("subscribing to client: %w", err)
+	}
+
+	c := &PulsarConsumer{
+		log:        logger,
+		ctx:        ctx,
+		client:     client,
+		consumer:   consumer,
+		subscriber: subscriber,
+	}
+
+	return c, nil
 }

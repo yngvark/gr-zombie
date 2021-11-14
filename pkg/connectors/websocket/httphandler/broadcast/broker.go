@@ -14,8 +14,8 @@ func (n *Broker) AddSubscriber(subscriber chan<- string) {
 	n.subscribers = append(n.subscribers, subscriber)
 }
 
-// SendMsg sends a message to all Subscriber-s
-func (n *Broker) SendMsg(msg string) error {
+// BroadCast sends a message to all Subscriber-s
+func (n *Broker) BroadCast(msg string) error {
 	for _, subscriber := range n.subscribers {
 		subscriber <- msg
 	}

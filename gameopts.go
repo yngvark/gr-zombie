@@ -73,9 +73,9 @@ func pubSubForWebsocket(
 
 	corsHelper.PrintAllowedCorsOrigins(allowedCorsOrigins)
 
-	return websocket.NewPublisher(logger),
-		websocket.NewConsumer(ctx, cancelFn, logger, subscriber, allowedCorsOrigins),
-		nil
+	publisher, consumer := websocket.New(ctx, cancelFn, logger, subscriber, allowedCorsOrigins)
+
+	return publisher, consumer, nil
 }
 
 func pubSubForPulsar(

@@ -97,7 +97,7 @@ func (h *Handler) closeConnectionWhenDone(closeConnectionChannel chan bool) {
 func (h *Handler) broadcast(message []byte) error {
 	msgString := string(message)
 
-	err := h.broadcaster.SendMsg(msgString)
+	err := h.broadcaster.BroadCast(msgString)
 	if err != nil {
 		return fmt.Errorf("sending message with publisher: %w", err)
 	}
@@ -105,8 +105,8 @@ func (h *Handler) broadcast(message []byte) error {
 	return nil
 }
 
-// SendMsgNotUsed sends a message via the websocket
-func (h *Handler) SendMsgNotUsed(msg string) error {
+// SendMsgToConnection sends a message via the websocket
+func (h *Handler) SendMsgToConnection(msg string) error {
 	if h.connection == nil {
 		return errors.New("could not send message, not connected")
 	}

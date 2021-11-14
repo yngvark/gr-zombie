@@ -12,22 +12,22 @@ import (
 
 type websocketConsumer struct {
 	ctx        context.Context
-	cancelFn   context.CancelFunc
 	logger     *zap.SugaredLogger
 	subscriber chan string
 
-	allowedCorsOrigins map[string]bool
-	httpHandler        *httphandler.Handler
+	httpHandler *httphandler.Handler
+	listening   bool
 }
 
 // ListenForMessages starts to receive messages which will be available by reading SubscriberChannel(). It blocks
 // until the websocketConsumer's context is canceled, so you should start it as a goroutine.
 func (c *websocketConsumer) ListenForMessages() error {
-	if c.httpHandler != nil {
+	if !c.listening {
+		c.listening = true
+	} else {
 		return errors.New("already listening for messages. Can listen for messages only once")
 	}
 
-	c.httpHandler = httphandler.New(c.cancelFn, c.logger, c.allowedCorsOrigins, c.subscriber)
 	http.Handle("/zombie", c.httpHandler)
 
 	<-c.ctx.Done()
@@ -52,18 +52,16 @@ func (c *websocketConsumer) Close() error {
 }
 
 // NewConsumer returns a new consumer for websockets
-func NewConsumer(
+func newConsumer(
 	ctx context.Context,
-	cancelFn context.CancelFunc,
 	logger *zap.SugaredLogger,
 	subscriber chan string,
-	allowedCorsOrigins map[string]bool,
+	httphandler *httphandler.Handler,
 ) pubsub.Consumer {
 	return &websocketConsumer{
-		ctx:                ctx,
-		cancelFn:           cancelFn,
-		logger:             logger,
-		subscriber:         subscriber,
-		allowedCorsOrigins: allowedCorsOrigins,
+		ctx:         ctx,
+		logger:      logger,
+		subscriber:  subscriber,
+		httpHandler: httphandler,
 	}
 }

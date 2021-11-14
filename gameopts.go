@@ -56,7 +56,7 @@ func newGameOpts(ctx context.Context, cancelFn context.CancelFunc, getEnv getEnv
 	}, nil
 }
 
-const allowedCorsOriginsEnvVarKey = "GAME_ALLOWED_CORS_ORIGINS"
+const allowedCorsOriginsEnvVarKey = "ALLOWED_CORS_ORIGINS"
 
 func pubSubForWebsocket(
 	ctx context.Context,

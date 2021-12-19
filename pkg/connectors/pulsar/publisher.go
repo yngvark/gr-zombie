@@ -23,7 +23,7 @@ func (m *pulsarPublisher) SendMsg(msg string) error {
 	})
 	if err != nil {
 		m.cancelFn()
-		return fmt.Errorf("failed to send message: %w", err)
+		return fmt.Errorf("sending message: %w", err)
 	}
 
 	return nil

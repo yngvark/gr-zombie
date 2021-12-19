@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/kafka"
 	"os"
 
 	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/websocket/oslookup"
@@ -34,15 +35,17 @@ func newGameOpts(ctx context.Context, cancelFn context.CancelFunc, getEnv getEnv
 
 	var consumer pubsub.Consumer
 
-	subscriberChan := make(chan string)
+	subscriber := make(chan string)
 
 	if getEnv("GAME_QUEUE_TYPE") == "websocket" {
-		publisher, consumer, err = pubSubForWebsocket(ctx, cancelFn, logger, subscriberChan)
+		publisher, consumer, err = pubSubForWebsocket(ctx, cancelFn, logger, subscriber)
 		if err != nil {
 			return nil, fmt.Errorf("creating websocket connectors: %w", err)
 		}
+	} else if getEnv("GAME_QUEUE_TYPE") == "kafka" {
+		publisher, consumer, err = pubSubForKafka(ctx, cancelFn, logger, subscriber)
 	} else {
-		publisher, consumer, err = pubSubForPulsar(ctx, cancelFn, logger, subscriberChan)
+		publisher, consumer, err = pubSubForPulsar(ctx, cancelFn, logger, subscriber)
 		if err != nil {
 			return nil, fmt.Errorf("creating pulsar connectors: %w", err)
 		}
@@ -73,28 +76,42 @@ func pubSubForWebsocket(
 
 	corsHelper.PrintAllowedCorsOrigins(allowedCorsOrigins)
 
-	publisher, consumer := websocket.New(ctx, cancelFn, logger, subscriber, allowedCorsOrigins)
+	p, c := websocket.New(ctx, cancelFn, logger, subscriber, allowedCorsOrigins)
 
-	return publisher, consumer, nil
+	return p, c, nil
 }
 
 func pubSubForPulsar(
 	ctx context.Context,
 	cancelFn context.CancelFunc,
 	logger *zap.SugaredLogger,
-	subscriberChan chan string,
+	subscriber chan string,
 ) (pubsub.Publisher, pubsub.Consumer, error) {
-	// Publisher
-	publisher, err := pulsar.NewPublisher(ctx, cancelFn, logger, "zombie")
+	p, err := pulsar.NewPublisher(ctx, cancelFn, logger, "zombie")
 	if err != nil {
 		return nil, nil, fmt.Errorf("creating publisher: %w", err)
 	}
 
-	// Consumer
-	consumer, err := pulsar.NewConsumer(ctx, logger, "gameinit", subscriberChan)
+	c, err := pulsar.NewConsumer(ctx, logger, "gameinit", subscriber)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not create consumer: %w", err)
 	}
 
-	return publisher, consumer, err
+	return p, c, nil
+}
+
+func pubSubForKafka(
+	ctx context.Context,
+	cancelFn context.CancelFunc,
+	logger *zap.SugaredLogger,
+	subscriber chan string,
+) (pubsub.Publisher, pubsub.Consumer, error) {
+	p, err := kafka.NewPublisher(ctx, cancelFn, logger, "zombie")
+	if err != nil {
+		return nil, nil, fmt.Errorf("creating publisher: %w", err)
+	}
+
+	c, err := kafka.NewConsumer(ctx, logger, "gameinit", subscriber)
+
+	return p, c, nil
 }

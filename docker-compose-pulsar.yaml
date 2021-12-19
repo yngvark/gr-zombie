@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  standalone:
+  broker:
     image: apachepulsar/pulsar-all:2.7.0
     ports:
       - "38080:8080"

@@ -14,9 +14,9 @@ import (
 type pulsarConsumer struct {
 	log        *zap.SugaredLogger
 	ctx        context.Context
+	subscriber chan string
 	client     pulsar.Client
 	consumer   pulsar.Consumer
-	subscriber chan string
 }
 
 func (c *pulsarConsumer) SubscriberChannel() chan string {

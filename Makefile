@@ -1,5 +1,6 @@
 SHELL         = bash
 IMAGE = ghcr.io/yngvark/gr-zombie
+DOCKER_COMPOSE_FILE=docker-compose-kafka.yaml
 
 GO := $(shell command -v go 2> /dev/null)
 ifndef GO
@@ -81,12 +82,12 @@ push: build-docker ## -
 	docker push $(IMAGE)
 
 up: ## docker-compose up -d with logs
-	(docker-compose down || true) && \
-	docker-compose up -d && \
-	docker logs -f gr-zombie_standalone_1
+	#(docker-compose -f ${DOCKER_COMPOSE_FILE} down || true) && \
+	docker-compose -f ${DOCKER_COMPOSE_FILE} up -d && \
+	docker logs -f gr-zombie_broker_1
 
 down: ## docker-compose down
-	docker-compose down
+	docker-compose -f ${DOCKER_COMPOSE_FILE} down
 
 ws-edit: ## - Edit websocket config
 	docker run -it -v zombie-go_pulsarconf:/pconf yngvark/linuxtools vim /pconf/websocket.conf

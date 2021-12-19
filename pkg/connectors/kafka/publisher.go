@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/segmentio/kafka-go"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
+	"github.com/yngvark/gr-zombie/pkg/pubsub"
 	"go.uber.org/zap"
 	"time"
 )

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/websocket/httphandler/broadcast"
+	"github.com/yngvark/gr-zombie/pkg/connectors/websocket/httphandler/broadcast"
 
 	"github.com/stretchr/testify/require"
 

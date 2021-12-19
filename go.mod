@@ -1,4 +1,4 @@
-module github.com/yngvark/gridwalls3/source/zombie-go
+module github.com/yngvark/gr-zombie
 
 go 1.15
 

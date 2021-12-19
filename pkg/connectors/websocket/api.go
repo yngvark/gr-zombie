@@ -2,8 +2,8 @@ package websocket
 
 import (
 	"context"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/websocket/httphandler"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
+	"github.com/yngvark/gr-zombie/pkg/connectors/websocket/httphandler"
+	"github.com/yngvark/gr-zombie/pkg/pubsub"
 	"go.uber.org/zap"
 )
 

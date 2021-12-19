@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/kafka"
+	"github.com/yngvark/gr-zombie/pkg/connectors/kafka"
 	"os"
 
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/websocket/oslookup"
+	"github.com/yngvark/gr-zombie/pkg/connectors/websocket/oslookup"
 
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/pulsar"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/websocket"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/log2"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
+	"github.com/yngvark/gr-zombie/pkg/connectors/pulsar"
+	"github.com/yngvark/gr-zombie/pkg/connectors/websocket"
+	"github.com/yngvark/gr-zombie/pkg/log2"
+	"github.com/yngvark/gr-zombie/pkg/pubsub"
 	"go.uber.org/zap"
 )
 

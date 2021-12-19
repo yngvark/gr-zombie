@@ -6,11 +6,11 @@ import (
 	"math/rand"
 	"time"
 
-	zombie2 "github.com/yngvark/gridwalls3/source/zombie-go/pkg/zombie"
+	zombie2 "github.com/yngvark/gr-zombie/pkg/zombie"
 	"go.uber.org/zap"
 
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/worldmap"
+	"github.com/yngvark/gr-zombie/pkg/pubsub"
+	"github.com/yngvark/gr-zombie/pkg/worldmap"
 )
 
 // GameLogic knows how to run the game

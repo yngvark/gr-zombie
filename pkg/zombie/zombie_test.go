@@ -4,10 +4,10 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/gamelogic"
+	"github.com/yngvark/gr-zombie/pkg/gamelogic"
 
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/worldmap"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/zombie"
+	"github.com/yngvark/gr-zombie/pkg/worldmap"
+	"github.com/yngvark/gr-zombie/pkg/zombie"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/worldmap"
+	"github.com/yngvark/gr-zombie/pkg/worldmap"
 )
 
 // Zombie is a horrible monster

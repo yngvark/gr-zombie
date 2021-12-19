@@ -4,7 +4,7 @@ package gamelogic
 import (
 	"fmt"
 
-	zombiePkg "github.com/yngvark/gridwalls3/source/zombie-go/pkg/zombie"
+	zombiePkg "github.com/yngvark/gr-zombie/pkg/zombie"
 )
 
 // Generator knows how to generate zombie actions

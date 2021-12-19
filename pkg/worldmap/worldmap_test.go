@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/worldmap"
+	"github.com/yngvark/gr-zombie/pkg/worldmap"
 
 	"github.com/stretchr/testify/assert"
 )

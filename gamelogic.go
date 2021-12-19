@@ -1,7 +1,7 @@
 package main
 
 import (
-	gamelogicPkg "github.com/yngvark/gridwalls3/source/zombie-go/pkg/gamelogic"
+	gamelogicPkg "github.com/yngvark/gr-zombie/pkg/gamelogic"
 )
 
 func runGameLogic(o *GameOpts) error {

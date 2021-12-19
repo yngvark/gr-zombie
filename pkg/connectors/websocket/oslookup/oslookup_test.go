@@ -3,8 +3,8 @@ package oslookup_test
 import (
 	"testing"
 
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/connectors/websocket/oslookup"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/log2"
+	"github.com/yngvark/gr-zombie/pkg/connectors/websocket/oslookup"
+	"github.com/yngvark/gr-zombie/pkg/log2"
 
 	"github.com/stretchr/testify/assert"
 )

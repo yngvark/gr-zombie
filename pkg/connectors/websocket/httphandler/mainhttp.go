@@ -4,8 +4,8 @@ package httphandler
 import (
 	"flag"
 	"fmt"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/gamelogic"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
+	"github.com/yngvark/gr-zombie/pkg/gamelogic"
+	"github.com/yngvark/gr-zombie/pkg/pubsub"
 	"go.uber.org/zap"
 	"log"
 	"net/http"

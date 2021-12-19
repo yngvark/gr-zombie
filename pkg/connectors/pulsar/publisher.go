@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/apache/pulsar-client-go/pulsar"
-	"github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
+	"github.com/yngvark/gr-zombie/pkg/pubsub"
 	"go.uber.org/zap"
 )
 

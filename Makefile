@@ -83,7 +83,7 @@ push: build-docker ## -
 up: ## docker-compose up -d with logs
 	(docker-compose down || true) && \
 	docker-compose up -d && \
-	docker logs -f zombie-go_standalone_1
+	docker logs -f gr-zombie_standalone_1
 
 down: ## docker-compose down
 	docker-compose down

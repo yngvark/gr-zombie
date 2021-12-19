@@ -15,7 +15,7 @@ type websocketConsumer struct {
 	logger     *zap.SugaredLogger
 	subscriber chan string
 
-	httpHandler *httphandler.Handler
+	httpHandler *httphandler.HTTPHandler
 	listening   bool
 }
 
@@ -56,7 +56,7 @@ func newConsumer(
 	ctx context.Context,
 	logger *zap.SugaredLogger,
 	subscriber chan string,
-	httphandler *httphandler.Handler,
+	httphandler *httphandler.HTTPHandler,
 ) pubsub.Consumer {
 	return &websocketConsumer{
 		ctx:         ctx,

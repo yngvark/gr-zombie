@@ -3,19 +3,19 @@ package broadcast
 
 import "github.com/yngvark/gridwalls3/source/zombie-go/pkg/pubsub"
 
-// Broker is used for sending (broadcasting) messages to a number of subscribers
-type Broker struct {
+// Broadcaster is used for sending (broadcasting) messages to a number of subscribers
+type Broadcaster struct {
 	pubsub.Publisher
 	subscribers []chan<- string
 }
 
 // AddSubscriber adds a Subscriber to its list of subscribers
-func (n *Broker) AddSubscriber(subscriber chan<- string) {
+func (n *Broadcaster) AddSubscriber(subscriber chan<- string) {
 	n.subscribers = append(n.subscribers, subscriber)
 }
 
 // BroadCast sends a message to all Subscriber-s
-func (n *Broker) BroadCast(msg string) error {
+func (n *Broadcaster) BroadCast(msg string) error {
 	for _, subscriber := range n.subscribers {
 		subscriber <- msg
 	}
@@ -23,9 +23,9 @@ func (n *Broker) BroadCast(msg string) error {
 	return nil
 }
 
-// New returns a new Broker
-func New() *Broker {
-	return &Broker{
+// New returns a new Broadcaster
+func New() *Broadcaster {
+	return &Broadcaster{
 		subscribers: make([]chan<- string, 0),
 	}
 }

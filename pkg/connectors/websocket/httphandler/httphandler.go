@@ -13,17 +13,17 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Handler knows how to handle HTTP websocket connections
-type Handler struct {
+// HTTPHandler knows how to handle HTTP websocket connections
+type HTTPHandler struct {
 	cancelFn    context.CancelFunc
 	logger      *zap.SugaredLogger
 	upgrader    *websocket.Upgrader
 	connection  *websocket.Conn
 	subscriber  chan string
-	broadcaster *broadcast.Broker
+	broadcaster *broadcast.Broadcaster
 }
 
-func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+func (h *HTTPHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	connection, err := h.upgrader.Upgrade(writer, request, nil)
 	if err != nil {
 		h.logger.Error("could not upgrade:", err)
@@ -43,7 +43,7 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	go h.readIncomingMessages(activelyCloseConnectionChannel)
 }
 
-func (h *Handler) readIncomingMessages(closeConnectionChannel chan bool) {
+func (h *HTTPHandler) readIncomingMessages(closeConnectionChannel chan bool) {
 	for {
 		h.logger.Info("Reading next message...")
 
@@ -80,7 +80,7 @@ func (h *Handler) readIncomingMessages(closeConnectionChannel chan bool) {
 	}
 }
 
-func (h *Handler) closeConnectionWhenDone(closeConnectionChannel chan bool) {
+func (h *HTTPHandler) closeConnectionWhenDone(closeConnectionChannel chan bool) {
 	<-closeConnectionChannel
 
 	h.logger.Info("Closing connection from server")
@@ -94,7 +94,7 @@ func (h *Handler) closeConnectionWhenDone(closeConnectionChannel chan bool) {
 	}
 }
 
-func (h *Handler) broadcast(message []byte) error {
+func (h *HTTPHandler) broadcast(message []byte) error {
 	msgString := string(message)
 
 	err := h.broadcaster.BroadCast(msgString)
@@ -106,7 +106,7 @@ func (h *Handler) broadcast(message []byte) error {
 }
 
 // SendMsgToConnection sends a message via the websocket
-func (h *Handler) SendMsgToConnection(msg string) error {
+func (h *HTTPHandler) SendMsgToConnection(msg string) error {
 	if h.connection == nil {
 		return errors.New("could not send message, not connected")
 	}
@@ -122,8 +122,8 @@ func (h *Handler) SendMsgToConnection(msg string) error {
 }
 
 // Close closes the handler
-func (h *Handler) Close() error {
-	h.logger.Info("Closing Handler")
+func (h *HTTPHandler) Close() error {
+	h.logger.Info("Closing HTTPHandler")
 
 	if h.connection != nil {
 		return h.connection.Close()
@@ -152,17 +152,17 @@ func createWebsocketCheckOriginFn(logger *zap.SugaredLogger, allowedOrigins map[
 	}
 }
 
-// New returns a new Handler
+// New returns a new HTTPHandler
 func New(
 	cancelFn context.CancelFunc,
 	logger *zap.SugaredLogger,
 	allowedOrigins map[string]bool,
 	subscriber chan string,
-) *Handler {
+) *HTTPHandler {
 	broadcaster := broadcast.New()
 	broadcaster.AddSubscriber(subscriber)
 
-	handler := &Handler{
+	handler := &HTTPHandler{
 		cancelFn:    cancelFn,
 		logger:      logger,
 		broadcaster: broadcaster,

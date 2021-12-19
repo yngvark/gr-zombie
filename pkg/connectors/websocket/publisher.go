@@ -9,7 +9,7 @@ import (
 
 type websocketPublisher struct {
 	logger      *zap.SugaredLogger
-	httpHandler *httphandler.Handler
+	httpHandler *httphandler.HTTPHandler
 }
 
 // SendMsg sends messages
@@ -29,7 +29,7 @@ func (p websocketPublisher) Close() error {
 }
 
 // NewPublisher returns a new publisher for websockets
-func newPublisher(logger *zap.SugaredLogger, httpHandler *httphandler.Handler) pubsub.Publisher {
+func newPublisher(logger *zap.SugaredLogger, httpHandler *httphandler.HTTPHandler) pubsub.Publisher {
 	return websocketPublisher{
 		logger:      logger,
 		httpHandler: httpHandler,

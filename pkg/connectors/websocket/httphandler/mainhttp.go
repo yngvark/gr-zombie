@@ -22,7 +22,7 @@ func New(logger *zap.SugaredLogger) *mainHelp {
 }
 
 func (m *mainHelp) SetupGame(allowedCorsOrigins map[string]bool) {
-	broker := pubsub.NewBroker()
+	broker := pubsub.NewBroadcaster()
 	stopGamelogicChannel := make(chan bool)
 
 	var publisher pubsub.Publisher = broker

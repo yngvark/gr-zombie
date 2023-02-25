@@ -9,7 +9,6 @@ require (
 	github.com/segmentio/kafka-go v0.4.25
 	github.com/stretchr/testify v1.6.1
 	go.uber.org/zap v1.16.0
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
-	golang.org/x/mod v0.5.0 // indirect
-	golang.org/x/tools v0.1.6 // indirect
+	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
